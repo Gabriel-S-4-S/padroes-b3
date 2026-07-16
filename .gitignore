@@ -1,0 +1,108 @@
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+ENV/
+
+# Build Python
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Pytest
+.pytest_cache/
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# ==========================
+# FastAPI
+# ==========================
+instance/
+.coverage
+htmlcov/
+
+# ==========================
+# Variáveis de ambiente
+# ==========================
+.env
+.env.*
+!.env.example
+
+# ==========================
+# Node / Next.js
+# ==========================
+node_modules/
+.next/
+out/
+.turbo/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================
+# IDEs
+# ==========================
+.idea/
+.vscode/
+
+# ==========================
+# Windows
+# ==========================
+Thumbs.db
+Desktop.ini
+
+# ==========================
+# macOS
+# ==========================
+.DS_Store
+
+# ==========================
+# Banco local (caso exista)
+# ==========================
+*.sqlite3
+*.db
+
+# ==========================
+# Arquivos temporários
+# ==========================
+*.tmp
+*.temp
+
+# ==========================
+# Arquivos de backup
+# ==========================
+*.bak
+*.old
+
+# ==========================
+# Cache
+# ==========================
+.cache/
+
+# ==========================
+# Arquivos de sistema
+# ==========================
+*.pid
+*.seed
+
+# ==========================
+# Certificados locais
+# ==========================
+*.pem
+*.key
