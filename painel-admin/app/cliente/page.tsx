@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
+
+import GoogleLoginButton from "@/components/google-login-button";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -14,6 +20,7 @@ export default function LoginClientePage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [mensagem, setMensagem] = useState("");
+
   const [carregando, setCarregando] =
     useState(false);
 
@@ -55,7 +62,15 @@ export default function LoginClientePage() {
         }
       );
 
-      const dados = await resposta.json();
+      let dados;
+
+      try {
+        dados = await resposta.json();
+      } catch {
+        throw new Error(
+          "A API retornou uma resposta inválida."
+        );
+      }
 
       if (!resposta.ok) {
         setMensagem(
@@ -88,6 +103,7 @@ export default function LoginClientePage() {
         setMensagem(
           "A API não retornou o token de acesso."
         );
+
         return;
       }
 
@@ -101,16 +117,18 @@ export default function LoginClientePage() {
         JSON.stringify(dados.usuario)
       );
 
-      router.push("/cliente/dashboard");
+      router.replace("/cliente/dashboard");
       router.refresh();
-    } catch (erro) {
+    } catch (erroDesconhecido) {
       console.error(
         "Erro no login do cliente:",
-        erro
+        erroDesconhecido
       );
 
       setMensagem(
-        "Não foi possível conectar à plataforma. Confirme se a API está ligada."
+        erroDesconhecido instanceof Error
+          ? erroDesconhecido.message
+          : "Não foi possível conectar à plataforma. Confirme se a API está ligada."
       );
     } finally {
       setCarregando(false);
@@ -207,12 +225,28 @@ export default function LoginClientePage() {
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Entre com o e-mail e a senha
-                cadastrados.
+                Entre rapidamente com sua conta Google
+                ou utilize seu e-mail e senha.
               </p>
 
+              <div className="mt-7 sm:mt-8">
+                <GoogleLoginButton
+                  texto="continue_with"
+                />
+              </div>
+
+              <div className="my-6 flex items-center gap-4">
+                <span className="h-px flex-1 bg-white/10" />
+
+                <span className="shrink-0 text-xs uppercase tracking-[0.18em] text-slate-600">
+                  ou
+                </span>
+
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
+
               <form
-                className="mt-7 space-y-5 sm:mt-8"
+                className="space-y-5"
                 onSubmit={fazerLogin}
               >
                 <div>
@@ -228,9 +262,15 @@ export default function LoginClientePage() {
                     type="email"
                     inputMode="email"
                     value={email}
-                    onChange={(evento) =>
-                      setEmail(evento.target.value)
-                    }
+                    onChange={(evento) => {
+                      setEmail(
+                        evento.target.value
+                      );
+
+                      if (mensagem) {
+                        setMensagem("");
+                      }
+                    }}
                     placeholder="seuemail@exemplo.com"
                     autoComplete="email"
                     autoCapitalize="none"
@@ -253,9 +293,15 @@ export default function LoginClientePage() {
                     id="senha"
                     type="password"
                     value={senha}
-                    onChange={(evento) =>
-                      setSenha(evento.target.value)
-                    }
+                    onChange={(evento) => {
+                      setSenha(
+                        evento.target.value
+                      );
+
+                      if (mensagem) {
+                        setMensagem("");
+                      }
+                    }}
                     placeholder="Digite sua senha"
                     autoComplete="current-password"
                     required
@@ -295,7 +341,7 @@ export default function LoginClientePage() {
                       Entrando...
                     </span>
                   ) : (
-                    "Entrar"
+                    "Entrar com e-mail"
                   )}
                 </button>
               </form>

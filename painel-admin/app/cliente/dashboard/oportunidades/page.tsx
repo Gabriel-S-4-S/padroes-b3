@@ -17,6 +17,8 @@ type Oportunidade = {
 
   horario_compra: string;
   horario_venda: string;
+  descricao_venda?: string;
+
   horizonte_saida: number;
 
   taxa_acerto: number;
@@ -28,7 +30,17 @@ type Oportunidade = {
   score: number;
 
   tipo_acesso?: string;
-  data_geracao?: string;
+  data_geracao?: string | null;
+
+  data_compra?: string | null;
+  data_venda_prevista?: string | null;
+
+  timestamp_compra?: string | null;
+  timestamp_venda_prevista?: string | null;
+
+  venda_proximo_pregao?: boolean;
+  pregoes_ate_venda?: number;
+  status_oportunidade?: string;
 };
 
 type RespostaOportunidades = {
@@ -46,9 +58,15 @@ export default function OportunidadesClientePage() {
     useState<RespostaOportunidades | null>(null);
 
   const [pesquisa, setPesquisa] = useState("");
+
   const [carregando, setCarregando] =
     useState(true);
+
   const [erro, setErro] = useState("");
+
+  const [agora, setAgora] = useState(
+    () => Date.now()
+  );
 
   const carregarOportunidades =
     useCallback(async () => {
@@ -62,6 +80,7 @@ export default function OportunidadesClientePage() {
           );
 
         setDados(resposta);
+        setAgora(Date.now());
       } catch (erroDesconhecido) {
         setErro(
           erroDesconhecido instanceof Error
@@ -77,63 +96,142 @@ export default function OportunidadesClientePage() {
     carregarOportunidades();
   }, [carregarOportunidades]);
 
-  const oportunidadesFiltradas =
-    useMemo(() => {
-      const oportunidades =
-        dados?.oportunidades ?? [];
+  /*
+   * Atualiza o horário local periodicamente.
+   * Assim, uma oportunidade desaparece da tela quando
+   * o horário previsto da venda passa, mesmo que o
+   * usuário não pressione o botão de atualização.
+   */
+  useEffect(() => {
+    const intervalo = window.setInterval(() => {
+      setAgora(Date.now());
+    }, 30_000);
 
-      const termo =
-        pesquisa.trim().toLowerCase();
+    return () => {
+      window.clearInterval(intervalo);
+    };
+  }, []);
 
-      if (!termo) {
-        return oportunidades;
+  /*
+   * Proteção adicional no frontend:
+   *
+   * 1. remove oportunidades vencidas;
+   * 2. remove oportunidades inativas;
+   * 3. mantém somente a melhor oportunidade por ação.
+   *
+   * O backend já realiza essas verificações, mas essa
+   * camada evita exibir dados antigos que ainda estejam
+   * carregados na página.
+   */
+  const oportunidadesAtuais = useMemo(() => {
+    const oportunidades =
+      dados?.oportunidades ?? [];
+
+    const validas = oportunidades.filter(
+      (oportunidade) =>
+        oportunidadeEstaValida(
+          oportunidade,
+          agora
+        )
+    );
+
+    const melhoresPorAcao =
+      new Map<string, Oportunidade>();
+
+    for (const oportunidade of validas) {
+      const acao = oportunidade.acao
+        .trim()
+        .toUpperCase();
+
+      if (!acao) {
+        continue;
       }
 
-      return oportunidades.filter(
-        (oportunidade) => {
-          return (
-            oportunidade.acao
-              .toLowerCase()
-              .includes(termo) ||
-            oportunidade.estrategia
-              .toLowerCase()
-              .includes(termo)
-          );
-        }
+      const melhorAtual =
+        melhoresPorAcao.get(acao);
+
+      if (
+        !melhorAtual ||
+        compararOportunidades(
+          oportunidade,
+          melhorAtual
+        ) > 0
+      ) {
+        melhoresPorAcao.set(
+          acao,
+          oportunidade
+        );
+      }
+    }
+
+    return Array.from(
+      melhoresPorAcao.values()
+    ).sort(
+      (primeira, segunda) =>
+        compararOportunidades(
+          segunda,
+          primeira
+        )
+    );
+  }, [agora, dados]);
+
+  const oportunidadesFiltradas =
+    useMemo(() => {
+      const termo = pesquisa
+        .trim()
+        .toLowerCase();
+
+      if (!termo) {
+        return oportunidadesAtuais;
+      }
+
+      return oportunidadesAtuais.filter(
+        (oportunidade) =>
+          oportunidade.acao
+            .toLowerCase()
+            .includes(termo) ||
+          oportunidade.estrategia
+            .toLowerCase()
+            .includes(termo)
       );
-    }, [dados, pesquisa]);
+    }, [
+      oportunidadesAtuais,
+      pesquisa,
+    ]);
 
   const melhorTaxa = useMemo(() => {
-    const oportunidades =
-      dados?.oportunidades ?? [];
-
-    if (oportunidades.length === 0) {
+    if (
+      oportunidadesAtuais.length === 0
+    ) {
       return 0;
     }
 
     return Math.max(
-      ...oportunidades.map(
+      ...oportunidadesAtuais.map(
         (oportunidade) =>
-          oportunidade.taxa_acerto
+          Number(
+            oportunidade.taxa_acerto ?? 0
+          )
       )
     );
-  }, [dados]);
+  }, [oportunidadesAtuais]);
 
   const melhorRetorno = useMemo(() => {
-    const oportunidades =
-      dados?.oportunidades ?? [];
-
-    if (oportunidades.length === 0) {
+    if (
+      oportunidadesAtuais.length === 0
+    ) {
       return 0;
     }
 
     return Math.max(
-      ...oportunidades.map(
+      ...oportunidadesAtuais.map(
         (oportunidade) =>
-          oportunidade.retorno_medio
+          Number(
+            oportunidade.retorno_medio ?? 0
+          )
       )
     );
-  }, [dados]);
+  }, [oportunidadesAtuais]);
 
   const acessoPremium =
     dados?.acesso === "premium";
@@ -151,8 +249,9 @@ export default function OportunidadesClientePage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Padrões aprovados encontrados no candle
-            mais recente.
+            O sistema exibe apenas oportunidades
+            válidas e mantém a melhor estratégia de
+            cada ação.
           </p>
         </div>
 
@@ -213,7 +312,7 @@ export default function OportunidadesClientePage() {
           valor={
             carregando
               ? "..."
-              : dados?.quantidade ?? 0
+              : oportunidadesAtuais.length
           }
           descricao={
             acessoPremium
@@ -280,7 +379,7 @@ export default function OportunidadesClientePage() {
 
             <p className="mt-1 text-sm text-slate-500">
               {oportunidadesFiltradas.length}{" "}
-              resultado(s)
+              resultado(s) válido(s)
             </p>
           </div>
 
@@ -328,14 +427,14 @@ export default function OportunidadesClientePage() {
               </div>
 
               <h3 className="mt-5 font-medium text-slate-200">
-                Nenhuma oportunidade disponível
+                Nenhuma oportunidade válida
               </h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Nenhum padrão aprovado está
-                acontecendo no candle mais recente.
-                Volte após uma nova execução do
-                scanner.
+                Nenhum padrão aprovado está ativo
+                neste momento. Oportunidades cujo
+                horário de venda já passou são
+                removidas automaticamente.
               </p>
             </div>
           </div>
@@ -346,7 +445,7 @@ export default function OportunidadesClientePage() {
                 <CardOportunidade
                   key={
                     oportunidade.id ??
-                    `${oportunidade.acao}-${indice}`
+                    `${oportunidade.acao}-${oportunidade.estrategia}`
                   }
                   oportunidade={
                     oportunidade
@@ -404,16 +503,19 @@ function CardResumo({
         "border-blue-500/20 bg-blue-500/[0.06]",
       valor: "text-blue-300",
     },
+
     sucesso: {
       container:
         "border-emerald-500/20 bg-emerald-500/[0.06]",
       valor: "text-emerald-300",
     },
+
     premium: {
       container:
         "border-violet-500/20 bg-violet-500/[0.06]",
       valor: "text-violet-300",
     },
+
     neutro: {
       container:
         "border-white/10 bg-white/[0.03]",
@@ -451,6 +553,19 @@ function CardOportunidade({
   oportunidade: Oportunidade;
   posicao: number;
 }) {
+  const descricaoVenda =
+    obterDescricaoVenda(oportunidade);
+
+  const momentoCompra =
+    formatarDataHora(
+      oportunidade.timestamp_compra
+    );
+
+  const momentoVenda =
+    formatarDataHora(
+      oportunidade.timestamp_venda_prevista
+    );
+
   return (
     <article className="min-w-0 rounded-2xl border border-white/10 bg-black/20 p-4 sm:p-6">
       <div className="flex flex-col gap-4 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
@@ -482,11 +597,26 @@ function CardOportunidade({
         <Informacao
           titulo="Compra"
           valor={`Fechamento das ${oportunidade.horario_compra}`}
+          complemento={
+            momentoCompra
+              ? momentoCompra
+              : undefined
+          }
         />
 
         <Informacao
-          titulo="Venda"
-          valor={`${oportunidade.horario_venda} — ${oportunidade.horizonte_saida} candle(s) depois`}
+          titulo="Venda prevista"
+          valor={descricaoVenda}
+          complemento={
+            momentoVenda
+              ? momentoVenda
+              : `${oportunidade.horizonte_saida} candle(s) depois`
+          }
+          destaque={
+            oportunidade.venda_proximo_pregao
+              ? "info"
+              : "normal"
+          }
         />
 
         <Informacao
@@ -514,13 +644,26 @@ function CardOportunidade({
         />
       </div>
 
+      {oportunidade.venda_proximo_pregao && (
+        <div className="mt-5 rounded-xl border border-blue-500/20 bg-blue-500/[0.06] p-4">
+          <p className="text-sm font-medium text-blue-200">
+            Saída em no dia posterior
+          </p>
+
+          <p className="mt-1 text-xs leading-5 text-blue-300/70">
+            A venda prevista não acontece no mesmo
+            dia da compra.
+          </p>
+        </div>
+      )}
+
       {oportunidade.data_geracao && (
         <div className="mt-5 border-t border-white/10 pt-4 sm:mt-6">
           <p className="text-xs leading-5 text-slate-600">
-            Gerada em{" "}
-            {formatarData(
+            Oportunidade registrada em{" "}
+            {formatarDataHora(
               oportunidade.data_geracao
-            )}
+            ) ?? oportunidade.data_geracao}
           </p>
         </div>
       )}
@@ -531,41 +674,180 @@ function CardOportunidade({
 function Informacao({
   titulo,
   valor,
+  complemento,
+  destaque = "normal",
 }: {
   titulo: string;
   valor: string | number;
+  complemento?: string;
+  destaque?: "normal" | "info";
 }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/5 bg-white/[0.02] p-4">
+    <div
+      className={`min-w-0 rounded-xl border p-4 ${
+        destaque === "info"
+          ? "border-blue-500/20 bg-blue-500/[0.05]"
+          : "border-white/5 bg-white/[0.02]"
+      }`}
+    >
       <p className="break-words text-xs uppercase tracking-wider text-slate-600">
         {titulo}
       </p>
 
-      <p className="mt-2 break-words text-sm font-medium leading-6 text-slate-200">
+      <p
+        className={`mt-2 break-words text-sm font-medium leading-6 ${
+          destaque === "info"
+            ? "text-blue-200"
+            : "text-slate-200"
+        }`}
+      >
         {valor}
       </p>
+
+      {complemento && (
+        <p className="mt-1 break-words text-xs leading-5 text-slate-500">
+          {complemento}
+        </p>
+      )}
     </div>
   );
 }
 
-function formatarDecimal(
-  valor: number | null | undefined
+function oportunidadeEstaValida(
+  oportunidade: Oportunidade,
+  agora: number
 ) {
-  return new Intl.NumberFormat("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(valor ?? 0));
+  if (
+    oportunidade.status_oportunidade &&
+    oportunidade.status_oportunidade !==
+      "ativa"
+  ) {
+    return false;
+  }
+
+  if (
+    !oportunidade.timestamp_venda_prevista
+  ) {
+    return true;
+  }
+
+  const timestampVenda =
+    converterData(
+      oportunidade.timestamp_venda_prevista
+    );
+
+  if (!timestampVenda) {
+    return true;
+  }
+
+  return timestampVenda.getTime() >= agora;
 }
 
-function formatarData(
-  dataTexto: string
+function compararOportunidades(
+  primeira: Oportunidade,
+  segunda: Oportunidade
 ) {
+  const primeiraChave = [
+    Number(primeira.score ?? 0),
+    Number(primeira.taxa_acerto ?? 0),
+    Number(primeira.retorno_medio ?? 0),
+    Number(primeira.ocorrencias ?? 0),
+    -Number(primeira.horizonte_saida ?? 0),
+  ];
+
+  const segundaChave = [
+    Number(segunda.score ?? 0),
+    Number(segunda.taxa_acerto ?? 0),
+    Number(segunda.retorno_medio ?? 0),
+    Number(segunda.ocorrencias ?? 0),
+    -Number(segunda.horizonte_saida ?? 0),
+  ];
+
+  for (
+    let indice = 0;
+    indice < primeiraChave.length;
+    indice += 1
+  ) {
+    const diferenca =
+      primeiraChave[indice] -
+      segundaChave[indice];
+
+    if (diferenca !== 0) {
+      return diferenca;
+    }
+  }
+
+  return 0;
+}
+
+function obterDescricaoVenda(
+  oportunidade: Oportunidade
+) {
+  if (
+    oportunidade.descricao_venda?.trim()
+  ) {
+    return oportunidade.descricao_venda;
+  }
+
+  const horario =
+    oportunidade.horario_venda ||
+    "Não informado";
+
+  if (
+    !oportunidade.venda_proximo_pregao
+  ) {
+    return horario;
+  }
+
+  const quantidadePregoes = Number(
+    oportunidade.pregoes_ate_venda ?? 1
+  );
+
+  if (quantidadePregoes <= 1) {
+    return `Próximo dia às ${horario}`;
+  }
+
+  return `${quantidadePregoes} pregões depois, às ${horario}`;
+}
+
+function converterData(
+  dataTexto:
+    | string
+    | null
+    | undefined
+) {
+  if (!dataTexto) {
+    return null;
+  }
+
+  const textoNormalizado =
+    dataTexto.includes("T")
+      ? dataTexto
+      : dataTexto.replace(" ", "T");
+
   const data = new Date(
-    dataTexto.replace(" ", "T")
+    textoNormalizado
   );
 
   if (Number.isNaN(data.getTime())) {
-    return dataTexto;
+    return null;
+  }
+
+  return data;
+}
+
+function formatarDataHora(
+  dataTexto:
+    | string
+    | null
+    | undefined
+) {
+  const data = converterData(
+    dataTexto
+  );
+
+  if (!data) {
+    return null;
   }
 
   return new Intl.DateTimeFormat(
@@ -575,4 +857,18 @@ function formatarData(
       timeStyle: "short",
     }
   ).format(data);
+}
+
+function formatarDecimal(
+  valor: number | null | undefined
+) {
+  return new Intl.NumberFormat(
+    "pt-BR",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }
+  ).format(
+    Number(valor ?? 0)
+  );
 }

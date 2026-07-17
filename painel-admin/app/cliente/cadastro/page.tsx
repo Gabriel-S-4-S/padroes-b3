@@ -1,8 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
+
+import GoogleLoginButton from "@/components/google-login-button";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
@@ -87,8 +92,16 @@ export default function CadastroClientePage() {
         }
       );
 
-      const dados =
-        (await resposta.json()) as RespostaCadastro;
+      let dados: RespostaCadastro;
+
+      try {
+        dados =
+          (await resposta.json()) as RespostaCadastro;
+      } catch {
+        throw new Error(
+          "A API retornou uma resposta inválida."
+        );
+      }
 
       if (!resposta.ok || !dados.sucesso) {
         setErro(
@@ -106,9 +119,11 @@ export default function CadastroClientePage() {
       setTimeout(() => {
         router.replace("/cliente");
       }, 1200);
-    } catch {
+    } catch (erroDesconhecido) {
       setErro(
-        "Não foi possível conectar à plataforma. Confirme se a API está ligada."
+        erroDesconhecido instanceof Error
+          ? erroDesconhecido.message
+          : "Não foi possível conectar à plataforma. Confirme se a API está ligada."
       );
     } finally {
       setCarregando(false);
@@ -223,15 +238,35 @@ export default function CadastroClientePage() {
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-400">
-                Preencha seus dados para acessar a
-                plataforma.
+                Cadastre-se rapidamente com o Google ou
+                preencha seus dados.
               </p>
+
+              <div className="mt-7 sm:mt-8">
+                <GoogleLoginButton
+                  texto="signup_with"
+                  onErro={(mensagemErro) => {
+                    setErro(mensagemErro);
+                    setMensagem("");
+                  }}
+                />
+              </div>
+
+              <div className="my-6 flex items-center gap-4">
+                <span className="h-px flex-1 bg-white/10" />
+
+                <span className="shrink-0 text-xs uppercase tracking-[0.18em] text-slate-600">
+                  ou
+                </span>
+
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
 
               {erro && (
                 <div
                   role="alert"
                   aria-live="polite"
-                  className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm leading-6 text-red-300"
+                  className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm leading-6 text-red-300"
                 >
                   {erro}
                 </div>
@@ -241,21 +276,24 @@ export default function CadastroClientePage() {
                 <div
                   role="status"
                   aria-live="polite"
-                  className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm leading-6 text-emerald-300"
+                  className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm leading-6 text-emerald-300"
                 >
                   {mensagem}
                 </div>
               )}
 
               <form
-                className="mt-7 space-y-5 sm:mt-8"
+                className="mt-7 space-y-5"
                 onSubmit={cadastrar}
               >
                 <Campo
                   id="nome"
                   label="Nome"
                   value={nome}
-                  onChange={setNome}
+                  onChange={(valor) => {
+                    setNome(valor);
+                    limparAvisos();
+                  }}
                   placeholder="Seu nome completo"
                   disabled={carregando}
                   autoComplete="name"
@@ -267,7 +305,10 @@ export default function CadastroClientePage() {
                   type="email"
                   inputMode="email"
                   value={email}
-                  onChange={setEmail}
+                  onChange={(valor) => {
+                    setEmail(valor);
+                    limparAvisos();
+                  }}
                   placeholder="seuemail@exemplo.com"
                   disabled={carregando}
                   autoComplete="email"
@@ -280,7 +321,10 @@ export default function CadastroClientePage() {
                   label="Senha"
                   type="password"
                   value={senha}
-                  onChange={setSenha}
+                  onChange={(valor) => {
+                    setSenha(valor);
+                    limparAvisos();
+                  }}
                   placeholder="Mínimo de 8 caracteres"
                   disabled={carregando}
                   autoComplete="new-password"
@@ -291,7 +335,10 @@ export default function CadastroClientePage() {
                   label="Confirmar senha"
                   type="password"
                   value={confirmarSenha}
-                  onChange={setConfirmarSenha}
+                  onChange={(valor) => {
+                    setConfirmarSenha(valor);
+                    limparAvisos();
+                  }}
                   placeholder="Repita sua senha"
                   disabled={carregando}
                   autoComplete="new-password"
@@ -315,7 +362,7 @@ export default function CadastroClientePage() {
                       Criando conta...
                     </span>
                   ) : (
-                    "Criar conta"
+                    "Criar conta com e-mail"
                   )}
                 </button>
               </form>
@@ -344,6 +391,16 @@ export default function CadastroClientePage() {
       </div>
     </main>
   );
+
+  function limparAvisos() {
+    if (erro) {
+      setErro("");
+    }
+
+    if (mensagem) {
+      setMensagem("");
+    }
+  }
 }
 
 function Campo({
