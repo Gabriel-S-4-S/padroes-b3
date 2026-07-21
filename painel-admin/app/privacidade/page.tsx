@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import Image from "next/image";
 import BreadcrumbSchema from "@/components/breadcrumb-schema";
 
 export default function PrivacidadePage() {
@@ -25,8 +25,14 @@ export default function PrivacidadePage() {
             aria-label="Voltar para a página inicial"
             className="flex min-w-0 items-center gap-3"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 font-bold">
-              B3
+            <div className="relative h-12 w-12 shrink-0 sm:h-14 sm:w-14">
+              <Image
+                src="/logo.png"
+                alt="Padrões B3"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
 
             <div className="min-w-0">
