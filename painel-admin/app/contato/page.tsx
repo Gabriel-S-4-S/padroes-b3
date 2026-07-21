@@ -84,18 +84,13 @@ export default function ContatoPage() {
       mensagem.trim(),
     ].join("\n");
 
-    const linkEmail =
-      `mailto:${EMAIL_CONTATO}` +
-      `?subject=${encodeURIComponent(
-        tituloEmail
-      )}` +
-      `&body=${encodeURIComponent(
-        corpoEmail
-      )}`;
+    const linkGmail =
+  `https://mail.google.com/mail/?view=cm&fs=1` +
+  `&to=${encodeURIComponent(EMAIL_CONTATO)}` +
+  `&su=${encodeURIComponent(tituloEmail)}` +
+  `&body=${encodeURIComponent(corpoEmail)}`;
 
-    window.location.href = linkEmail;
-  }
-
+window.open(linkGmail, "_blank");
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#05070b] text-white">
       <BreadcrumbSchema
