@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Recuperar senha",
