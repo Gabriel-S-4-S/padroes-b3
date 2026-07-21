@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   useCallback,
   useEffect,
@@ -422,8 +423,15 @@ export default function OportunidadesClientePage() {
           0 ? (
           <div className="flex min-h-72 items-center justify-center p-5 text-center sm:min-h-80 sm:p-8">
             <div className="max-w-md">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] font-semibold text-slate-400">
-                B3
+              
+              <div className="relative h-12 w-12 shrink-0 sm:h-14 sm:w-14">
+                <Image
+                  src="/logo.png"
+                  alt="Padrões B3"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
 
               <h3 className="mt-5 font-medium text-slate-200">
