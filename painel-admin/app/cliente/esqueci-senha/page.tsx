@@ -92,9 +92,16 @@ export default function EsqueciSenhaPage() {
             aria-label="Voltar para a página inicial"
             className="flex min-w-0 items-center gap-3"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold">
-              B3
-            </span>
+            
+            <div className="relative h-12 w-12 shrink-0 sm:h-14 sm:w-14">
+              <Image
+                src="/logo.png"
+                alt="Padrões B3"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
 
             <span className="min-w-0">
               <span className="block truncate text-lg font-semibold">
