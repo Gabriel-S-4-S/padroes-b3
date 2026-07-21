@@ -42,69 +42,62 @@ export default function ContatoPage() {
     [mensagem]
   );
 
-  function enviarMensagem(
-    evento: FormEvent<HTMLFormElement>
-  ) {
-    evento.preventDefault();
+ function enviarMensagem(
+  evento: FormEvent<HTMLFormElement>
+) {
+  evento.preventDefault();
 
-    setErro("");
+  setErro("");
 
-    if (nome.trim().length < 3) {
-      setErro(
-        "Informe um nome com pelo menos 3 caracteres."
-      );
-      return;
-    }
+  if (nome.trim().length < 3) {
+    setErro(
+      "Informe um nome com pelo menos 3 caracteres."
+    );
+    return;
+  }
 
-    if (!email.trim()) {
-      setErro(
-        "Informe seu endereço de e-mail."
-      );
-      return;
-    }
+  if (!email.trim()) {
+    setErro(
+      "Informe seu endereço de e-mail."
+    );
+    return;
+  }
 
-    if (mensagem.trim().length < 10) {
-      setErro(
-        "Explique sua solicitação com pelo menos 10 caracteres."
-      );
-      return;
-    }
+  if (mensagem.trim().length < 10) {
+    setErro(
+      "Explique sua solicitação com pelo menos 10 caracteres."
+    );
+    return;
+  }
 
-    const tituloEmail =
-      `[Padrões B3] ${assunto}`;
+  const tituloEmail =
+    `[Padrões B3] ${assunto}`;
 
-    const corpoEmail = [
-      `Nome: ${nome.trim()}`,
-      `E-mail: ${email
-        .trim()
-        .toLowerCase()}`,
-      `Assunto: ${assunto}`,
-      "",
-      "Mensagem:",
-      mensagem.trim(),
-    ].join("\n");
+  const corpoEmail = [
+    `Nome: ${nome.trim()}`,
+    `E-mail: ${email
+      .trim()
+      .toLowerCase()}`,
+    `Assunto: ${assunto}`,
+    "",
+    "Mensagem:",
+    mensagem.trim(),
+  ].join("\n");
 
-    const linkGmail =
-  `https://mail.google.com/mail/?view=cm&fs=1` +
-  `&to=${encodeURIComponent(EMAIL_CONTATO)}` +
-  `&su=${encodeURIComponent(tituloEmail)}` +
-  `&body=${encodeURIComponent(corpoEmail)}`;
+  const linkGmail =
+    `https://mail.google.com/mail/?view=cm&fs=1` +
+    `&to=${encodeURIComponent(
+      EMAIL_CONTATO
+    )}` +
+    `&su=${encodeURIComponent(
+      tituloEmail
+    )}` +
+    `&body=${encodeURIComponent(
+      corpoEmail
+    )}`;
 
-window.open(linkGmail, "_blank");
-  return (
-    <main className="min-h-screen overflow-x-hidden bg-[#05070b] text-white">
-      <BreadcrumbSchema
-        itens={[
-          {
-            nome: "Início",
-            caminho: "/",
-          },
-          {
-            nome: "Contato",
-            caminho: "/contato",
-          },
-        ]}
-      />
+  window.open(linkGmail, "_blank");
+}
 
       <header className="border-b border-white/10 bg-[#07111f]">
         <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
