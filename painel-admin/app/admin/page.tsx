@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -87,8 +88,15 @@ export default function Home() {
         <section className="hidden border-r border-white/10 bg-[#07111f] p-12 lg:flex lg:flex-col lg:justify-between">
           <div>
             <div className="inline-flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 font-bold">
-                B3
+              
+              <div className="relative h-12 w-12 shrink-0 sm:h-14 sm:w-14">
+                <Image
+                  src="/logo.png"
+                  alt="Padrões B3"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
 
               <div>
