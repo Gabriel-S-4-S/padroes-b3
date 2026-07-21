@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import Image from "next/image";
 import PublicHeader from "@/components/public-header";
 
 const beneficios = [
@@ -769,10 +769,17 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-10 md:flex-row">
           <div>
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold">
-                B3
-              </span>
-
+              
+              <div className="relative h-12 w-12 shrink-0 sm:h-14 sm:w-14">
+                <Image
+                  src="/logo.png"
+                  alt="Padrões B3"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              
               <div>
                 <p className="font-semibold">
                   Padrões B3
