@@ -98,7 +98,7 @@ export default function ContatoPage() {
 
   window.open(linkGmail, "_blank");
 }
-return (
+  return (
       <header className="border-b border-white/10 bg-[#07111f]">
         <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <Link
