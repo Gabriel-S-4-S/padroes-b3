@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import Image from "next/image";
 import StatCard from "@/components/stat-card";
 import { apiFetch } from "@/app/services/api";
 
@@ -255,9 +255,16 @@ function LinhaSistema({
 }: LinhaSistemaProps) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-sm text-slate-400">
-        {nome}
-      </span>
+      
+      <div className="relative h-12 w-12 shrink-0 sm:h-14 sm:w-14">
+        <Image
+          src="/logo.png"
+          alt="Padrões B3"
+          fill
+          className="object-contain"
+          priority
+        />
+      </div>
 
       <div className="flex items-center gap-2">
         {online && (
