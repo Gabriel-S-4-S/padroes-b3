@@ -9,6 +9,8 @@ import {
 
 import DadosEstruturadosGlobais from "@/components/dados-estruturados-globais";
 
+import Script from "next/script";
+
 import "./globals.css";
 
 const URL_PADRAO =
@@ -190,10 +192,28 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden bg-[#05070b] text-white">
-        <DadosEstruturadosGlobais />
+  <Script
+    src="https://www.googletagmanager.com/gtag/js?id=G-DXM2FQD9VE"
+    strategy="afterInteractive"
+  />
 
-        {children}
-      </body>
+  <Script
+    id="google-analytics"
+    strategy="afterInteractive"
+  >
+    {`
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-DXM2FQD9VE');
+    `}
+  </Script>
+
+  <DadosEstruturadosGlobais />
+
+  {children}
+</body>
     </html>
   );
 }
