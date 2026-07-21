@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -48,9 +49,16 @@ export default function AdminSidebar() {
   return (
     <aside className="hidden min-h-screen w-72 shrink-0 border-r border-white/10 bg-[#07111f] p-6 lg:block">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 font-bold text-white">
-          B3
-        </div>
+        
+       <div className="relative h-12 w-12 shrink-0 sm:h-14 sm:w-14">
+        <Image
+          src="/logo.png"
+          alt="Padrões B3"
+          fill
+          className="object-contain"
+          priority
+        />
+      </div>
 
         <div>
           <h1 className="font-semibold text-white">Padrões B3</h1>
