@@ -251,7 +251,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={"${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased"}
+      className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
     >
 
       <body className="flex min-h-full flex-col overflow-x-hidden bg-[#05070b] text-white">
