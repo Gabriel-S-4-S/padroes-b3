@@ -14,10 +14,12 @@ from auth.permissoes import obter_usuario_autenticado
 
 from pagamentos.mercado_pago_service import (
     ErroMercadoPago,
+    consultar_pagamento,
     validar_assinatura_webhook,
 )
 
 from pagamentos.pagamentos_db import (
+    buscar_por_referencia,
     listar_pagamentos_usuario,
 )
 
@@ -25,6 +27,7 @@ from pagamentos.processador_pagamento import (
     ErroProcessamentoPagamento,
     processar_pagamento_mercado_pago,
 )
+
 
 
 router = APIRouter(
@@ -176,31 +179,54 @@ def sincronizar_pagamento(
     o valor for correto e o pagamento estiver aprovado.
     """
 
+    # Verifique a titularidade ANTES de processar/ativar qualquer plano.
+    # A referência externa vem do pagamento consultado diretamente no Mercado Pago.
     try:
-        resultado = processar_pagamento_mercado_pago(
-            pagamento_id=pagamento_id,
-        )
-
+        pagamento_mp = consultar_pagamento(pagamento_id)
     except ErroMercadoPago as erro:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=str(erro),
         ) from erro
 
-    except ErroProcessamentoPagamento as erro:
+    referencia_externa = str(
+        pagamento_mp.get("external_reference") or ""
+    ).strip()
+
+    if not referencia_externa:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(erro),
-        ) from erro
+            detail="O pagamento não possui referência externa.",
+        )
+
+    pagamento_local = buscar_por_referencia(referencia_externa)
+
+    if pagamento_local is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Não foi encontrada uma cobrança local correspondente.",
+        )
 
     if (
-        resultado.get("usuario_email")
-        and resultado["usuario_email"].lower()
-        != usuario["email"].lower()
+        str(pagamento_local.get("usuario_email") or "").lower()
+        != str(usuario.get("email") or "").lower()
     ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Este pagamento pertence a outra conta.",
         )
 
-    return resultado
+    try:
+        return processar_pagamento_mercado_pago(
+            pagamento_id=pagamento_id,
+        )
+    except ErroMercadoPago as erro:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(erro),
+        ) from erro
+    except ErroProcessamentoPagamento as erro:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(erro),
+        ) from erro
