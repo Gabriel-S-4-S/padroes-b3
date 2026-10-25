@@ -160,7 +160,9 @@ export default function ResultadoPagamentoPage() {
         }
       }
 
-      return lista[0] ?? null;
+      // Não associe o retorno a uma cobrança aleatória: isso poderia
+      // mostrar a confirmação de outro pagamento da mesma conta.
+      return null;
     },
     [referenciaUrl, pagamentoIdUrl]
   );
@@ -188,8 +190,34 @@ export default function ResultadoPagamentoPage() {
 
         setPagamentos(lista);
 
-        const pagamento =
+        let pagamento =
           encontrarPagamentoRelacionado(lista);
+
+        // Se o retorno do Mercado Pago trouxer payment_id, tente sincronizar
+        // com o backend. Isso recupera casos em que o webhook atrasou ou falhou.
+        // O backend valida a referência e a titularidade antes de ativar o plano.
+        if (!pagamento && pagamentoIdUrl) {
+          try {
+            await apiClienteFetch(
+              `/pagamentos/sincronizar/${encodeURIComponent(pagamentoIdUrl)}`,
+              { method: "POST" }
+            );
+
+            const respostaAtualizada =
+              await apiClienteFetch<RespostaPagamentos>(
+                "/pagamentos/meus?limite=20"
+              );
+
+            const listaAtualizada =
+              respostaAtualizada.pagamentos ?? [];
+
+            setPagamentos(listaAtualizada);
+            pagamento =
+              encontrarPagamentoRelacionado(listaAtualizada);
+          } catch {
+            // A tela continua em estado de espera e permite nova consulta manual.
+          }
+        }
 
         setPagamentoAtual(pagamento);
         setUltimaConsulta(new Date());
@@ -208,10 +236,10 @@ export default function ResultadoPagamentoPage() {
           status === "approved" &&
           Boolean(pagamento.processado)
         ) {
-          pagamentoConfirmado.current = true;
-
           const usuarioAtualizado = await atualizarConta();
 
+          // Só interrompe as consultas depois de confirmar também a conta.
+          pagamentoConfirmado.current = true;
           setEstado("aprovado");
           setMensagem(
             `Pagamento aprovado. Seu plano ${formatarPlano(
