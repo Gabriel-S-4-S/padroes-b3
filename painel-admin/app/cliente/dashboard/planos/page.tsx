@@ -66,7 +66,7 @@ const planos: Plano[] = [
   {
     id: "mensal",
     nome: "Premium Mensal",
-    preco: "R$ 20",
+    preco: "R$ 5",
     periodo: "por mês",
     descricao:
       "Acesso completo às oportunidades sem compromisso anual.",
@@ -83,7 +83,7 @@ const planos: Plano[] = [
   {
     id: "anual",
     nome: "Premium Anual",
-    preco: "R$ 180",
+    preco: "R$ 40",
     periodo: "por ano",
     descricao:
       "A melhor opção para quem deseja economizar no longo prazo.",
@@ -92,8 +92,8 @@ const planos: Plano[] = [
       "Todos os benefícios do plano mensal",
       "Alertas de novas oportunidades enviados por e-mail",
       "Acesso completo por 12 meses",
-      "Equivale a R$ 15 por mês",
-      "Economia de R$ 60 em comparação ao plano mensal",
+      "Equivale a aproximadamente R$ 3,33 por mês",
+      "Economia de R$ 20 em comparação a 12 mensalidades",
       "Menos preocupação com renovações mensais",
       "Acesso contínuo às oportunidades Premium",
     ],
@@ -338,7 +338,7 @@ export default function PlanosPage() {
 
         <p className="mt-2 text-sm leading-6 text-slate-500">
           O plano anual oferece os mesmos recursos do mensal,
-          com economia de R$ 60 ao longo de 12 meses.
+          com economia de R$ 20 ao longo de 12 mensalidades.
         </p>
 
         <div className="mt-5 grid gap-4 sm:mt-6 md:grid-cols-3">
@@ -351,15 +351,15 @@ export default function PlanosPage() {
 
           <Resumo
             titulo="Mensal"
-            valor="R$ 20/mês"
+            valor="R$ 5/mês"
             descricao="Acesso Premium completo"
             destaque="info"
           />
 
           <Resumo
             titulo="Anual"
-            valor="R$ 15/mês"
-            descricao="Cobrança única de R$ 180"
+            valor="R$ 3,33/mês"
+            descricao="Cobrança única de R$ 40"
             destaque="premium"
           />
         </div>
