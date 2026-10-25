@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -51,12 +53,27 @@ criar_tabela_pagamentos()
 
 
 # Permite que o painel Next.js se comunique com a API.
+# Em produção, configure URL_FRONTEND com a origem HTTPS do site
+# (por exemplo, https://padroesb3.com.br). CORS_ORIGINS aceita
+# origens adicionais separadas por vírgula.
+origens_cors = {
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+}
+url_frontend = os.getenv("URL_FRONTEND", "").strip().rstrip("/")
+if url_frontend:
+    origens_cors.add(url_frontend)
+
+origens_adicionais = os.getenv("CORS_ORIGINS", "")
+origens_cors.update(
+    origem.strip().rstrip("/")
+    for origem in origens_adicionais.split(",")
+    if origem.strip()
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=sorted(origens_cors),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
