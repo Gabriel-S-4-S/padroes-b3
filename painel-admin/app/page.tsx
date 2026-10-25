@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+
 import PublicHeader from "@/components/public-header";
 
 const beneficios = [
@@ -118,7 +118,7 @@ const perguntas = [
   {
     pergunta: "Qual é a diferença entre o plano mensal e o anual?",
     resposta:
-      "Os dois oferecem acesso Premium completo. O plano mensal custa R$ 20 por mês, enquanto o anual custa R$ 180 por ano, equivalente a R$ 15 por mês.",
+      "Os dois oferecem acesso Premium completo. O plano mensal custa R$ 5 por mês, enquanto o anual custa R$ 40 por ano, equivalente a R$ 3,33 por mês.",
   },
   {
     pergunta: "Posso cancelar o plano mensal?",
@@ -641,7 +641,7 @@ export default function HomePage() {
 
             <Plano
               nome="Premium Mensal"
-              preco="R$ 20"
+              preco="R$ 5"
               periodo="por mês"
               descricao="Acesso completo sem compromisso anual."
               beneficios={[
@@ -657,14 +657,14 @@ export default function HomePage() {
 
             <Plano
               nome="Premium Anual"
-              preco="R$ 180"
+              preco="R$ 40"
               periodo="por ano"
               descricao="A opção com melhor economia no longo prazo."
               beneficios={[
                 "Todos os benefícios do plano mensal",
                 "Acesso Premium por 12 meses",
-                "Equivale a R$ 15 por mês",
-                "Economia de R$ 60 no ano",
+                "Equivale a R$ 3,33 por mês",
+                "Economia de R$ 20 no ano",
                 "Menos preocupação com renovações",
               ]}
               textoBotao="Escolher plano anual"
@@ -769,17 +769,10 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-10 md:flex-row">
           <div>
             <div className="flex items-center gap-3">
-              
-              <div className="relative h-12 w-12 shrink-0 sm:h-14 sm:w-14">
-                <Image
-                  src="/logo.png"
-                  alt="Padrões B3"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold">
+                B3
+              </span>
+
               <div>
                 <p className="font-semibold">
                   Padrões B3
