@@ -20,8 +20,8 @@ PLANOS = {
     "mensal": {
         "id": "mensal",
         "nome": "Premium Mensal",
-        "preco_centavos": 2000,
-        "preco_formatado": "R$ 20,00",
+        "preco_centavos": 500,
+        "preco_formatado": "R$ 5,00",
         "periodicidade": "mensal",
         "duracao_dias": 30,
         "descricao": (
@@ -39,8 +39,8 @@ PLANOS = {
     "anual": {
         "id": "anual",
         "nome": "Premium Anual",
-        "preco_centavos": 18000,
-        "preco_formatado": "R$ 180,00",
+        "preco_centavos": 4000,
+        "preco_formatado": "R$ 40,00",
         "periodicidade": "anual",
         "duracao_dias": 365,
         "descricao": (
@@ -49,8 +49,8 @@ PLANOS = {
         "beneficios": [
             "Todos os benefícios do plano mensal",
             "Acesso Premium por 12 meses",
-            "Equivale a R$ 15,00 por mês",
-            "Economia de R$ 60,00 no ano",
+            "Equivale a aproximadamente R$ 3,33 por mês",
+            "Economia de R$ 20,00 em comparação a 12 mensalidades",
             "Menos renovações",
             "Acesso contínuo às oportunidades",
         ],
